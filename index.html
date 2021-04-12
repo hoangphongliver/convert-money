@@ -181,7 +181,7 @@
               newObj = {
                 ...m,
                 image: d.image,
-                remain: d.remain
+                remain: d.remain,
               };
             }
           });
@@ -193,7 +193,9 @@
         moneyArrWithImg.forEach((m) => {
           html += `<div class="row">
               <div>
-                <h2 class="amount-number">x${m.amountNumber} tờ</h2>
+                <h2 class="amount-number">${new Intl.NumberFormat().format(
+                  m.denominations
+                )} x ${m.amountNumber} tờ</h2>
                 <h2>Còn lại: ${m.remain} tờ</h2>
               </div>
               <div class="denominations">
