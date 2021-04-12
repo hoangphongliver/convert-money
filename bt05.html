@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <style>
+      .convert-money__convert {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .convert-money__convert .row {
+        width: 24%;
+        padding: 50px;
+      }
+
+      .convert-money__convert .row img {
+        width: 450px;
+        height: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="convert-money">
+      <div class="convert-money__input">
+        <div class="label">Nhập</div>
+        <input id="money-input" type="number" placeholder="Nhập số tiền..." />
+      </div>
+      <div class="convert-money__convert" id="convert-money"></div>
+    </div>
+    <script>
+      const denominationsList = [
+        {
+          denominations: 1000,
+          image:
+            "https://baonguyensontrang.files.wordpress.com/2018/01/tien-1000-dong-ohay-tv-856.jpg",
+          remain: 100,
+        },
+        {
+          denominations: 2000,
+          image: "https://art-hanoi.com/collection/vnpaper/vn-p107-f.jpg",
+          remain: 100,
+        },
+        {
+          denominations: 5000,
+          image:
+            "https://baomoi-photo-fbcrawler.zadn.vn/w900_r16x9/2017_10_14_180_23572241/efab668682c66b9832d7.jpg",
+          remain: 100,
+        },
+        {
+          denominations: 10000,
+          image:
+            "https://soicauxosoonline.net/wp-content/uploads/2020/05/Nam-Mo-Thay-Tien-10-Nghin-Danh-So-May-Giai.JPG",
+          remain: 100,
+        },
+        {
+          denominations: 20000,
+          image:
+            "https://vcdn-dulich.vnecdn.net/2017/04/15/cac-dia-danh-tren-to-tien-viet-6329-1494-1492274586.jpg",
+          remain: 100,
+        },
+        {
+          denominations: 50000,
+          image:
+            "https://xhtt.vn/wp-content/uploads/2020/05/mo-thay-tien-50-nghin-e1606723020618.jpg",
+          remain: 100,
+        },
+        {
+          denominations: 100000,
+          image:
+            "https://dotchuoinon.files.wordpress.com/2019/01/100nghins.jpg",
+          remain: 100,
+        },
+        {
+          denominations: 200000,
+          image:
+            "https://luongngocanh.com/wp-content/uploads/2020/07/tien-200-nghin-ra-doi-nam-nao.jpg",
+          remain: 10,
+        },
+        {
+          denominations: 500000,
+          image: "https://thatgia.com/uploads/2015/10/500000t.jpg",
+          remain: 3,
+        },
+      ];
+
+      const convertMoney = (priceNeedToFormat) => {
+        let priceInitial = Math.round(priceNeedToFormat);
+        let i = 0;
+
+        // Lấy về mệnh giá , xếp từ lớn tới bé
+        const newPriceModel = denominationsList
+          .filter((p) => p.denominations <= Math.round(priceNeedToFormat))
+          .sort((a, b) => b.denominations - a.denominations);
+
+        let moneyArr = [];
+
+        let model = {
+          amountNumber: 0,
+          denominations: "",
+        };
+
+        let surplus = 0;
+        while (i < newPriceModel.length) {
+          surplus = priceInitial % newPriceModel[i].denominations;
+          if (surplus) {
+            // nếu có số dư
+            // số lượng money = số tiền nhập trừ số dư chia mệnh giá, VD: 2,200,000 => dư 200,000 , số lượng tờ 500,000 = (2,200,000 - 200,000) / 500,000 = 4 tờ
+            const numberOfMoney =
+              (priceInitial - surplus) / newPriceModel[i].denominations;
+
+            // Nếu số lượng tiền đổi lơn hơn số tờ còn lai
+            if (numberOfMoney > newPriceModel[i].remain) {
+              model = {
+                amountNumber: newPriceModel[i].remain,
+                denominations: newPriceModel[i].denominations,
+              };
+
+              surplus +=
+                (numberOfMoney - newPriceModel[i].remain) *
+                newPriceModel[i].denominations;
+
+              moneyArr.push(model);
+            } else {
+              if (numberOfMoney) {
+                model = {
+                  amountNumber: numberOfMoney,
+                  denominations: newPriceModel[i].denominations,
+                };
+
+                moneyArr.push(model);
+              }
+            }
+            priceInitial = surplus;
+          } else {
+            // không có số dư
+            // số lượng tờ = số tiền nhập chia mệnh giá lớn nhất, VD: 2,000,000 => 2,000,000 / 500,000 = 4 tờ , VD2: 400,000 => 400,000 / 200,000 = 2 tờ
+            const numberOfMoney = priceInitial / newPriceModel[i].denominations;
+
+            // Nếu số lượng tiền đổi lơn hơn số tờ còn lai
+            if (numberOfMoney > newPriceModel[i].remain) {
+              model = {
+                amountNumber: newPriceModel[i].remain,
+                denominations: newPriceModel[i].denominations,
+              };
+
+              // số dư bây h bằng số lượng tiền đổi trừ số tiền còn lại , sau đó nhân mệnh giá
+              surplus +=
+                (numberOfMoney - newPriceModel[i].remain) *
+                newPriceModel[i].denominations;
+
+              // gán priceInitial = surplus
+              priceInitial = surplus;
+
+              moneyArr.push(model);
+            } else {
+              model = {
+                amountNumber: priceInitial / newPriceModel[i].denominations,
+                denominations: newPriceModel[i].denominations,
+              };
+              moneyArr.push(model);
+              break;
+            }
+          }
+          i++;
+        }
+
+        return moneyArr;
+      };
+
+      const renderMoney = (price) => {
+        const moneyArr = convertMoney(price);
+
+        const moneyArrWithImg = moneyArr.map((m) => {
+          let newObj = {};
+          denominationsList.forEach((d) => {
+            if (m.denominations === d.denominations) {
+              newObj = {
+                ...m,
+                image: d.image,
+                remain: d.remain
+              };
+            }
+          });
+
+          return newObj;
+        });
+
+        let html = "";
+        moneyArrWithImg.forEach((m) => {
+          html += `<div class="row">
+              <div>
+                <h2 class="amount-number">x${m.amountNumber} tờ</h2>
+                <h2>Còn lại: ${m.remain} tờ</h2>
+              </div>
+              <div class="denominations">
+                <img src="${m.image}" alt="" />
+              </div>
+            </div>`;
+        });
+
+        const moneyEle = document.getElementById("convert-money");
+        moneyEle.innerHTML = html;
+      };
+
+      const moneyInput = document.getElementById("money-input");
+
+      moneyInput.addEventListener("keyup", function (event) {
+        // render html
+        renderMoney(Number(event.target.value));
+      });
+    </script>
+  </body>
+</html>
